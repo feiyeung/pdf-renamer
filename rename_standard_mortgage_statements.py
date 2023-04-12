@@ -7,11 +7,17 @@ from PyPDF2 import PdfReader
 def main():
     ARGS = get_args()
     for f in get_files(ARGS.path):
-        statement_date = get_statement_date(f)
-        path_new = os.path.join(
-                os.path.dirname(f), statement_date.strftime("Statement_%Y-%m-%d.pdf"))
-        print(f"rename {f} to {path_new}")
-        shutil.copyfile(f, path_new)
+        print("processing file " + f)
+        try:
+            statement_date = get_statement_date(f)
+            path_new = os.path.join(
+                    os.path.dirname(f), statement_date.strftime("Statement_%Y-%m-%d.pdf"))
+            print(f"rename {f} to {path_new}")
+            shutil.move(f, path_new)
+        except:
+            print("\n**********************************************")
+            print("* failed to process file %s" % f)
+            print("**********************************************\n")
 
 def get_args():
     ap = AP.ArgumentParser()
@@ -38,7 +44,7 @@ def get_statement_date(path):
     page = reader.pages[0]
     page.extract_text(visitor_text=pdf_visitor_text_for_statement_date)
     text_body = "".join(parts).strip()
-    print(text_body)
+    print("parsing date out of: %s" % text_body)
     return parse_date(text_body)
 
 def parse_date(date_str):
